@@ -8,6 +8,6 @@
       <TextArea layoutX="21.0" layoutY="25.0" prefHeight="200.0" prefWidth="220.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="21.0" AnchorPane.topAnchor="25.0" fx:id="firstTextArea" />
       <TextArea layoutX="356.0" layoutY="25.0" prefHeight="200.0" prefWidth="220.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="360.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="25.0" fx:id="secondTextArea" />
       <Button layoutX="260.0" layoutY="77.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="&gt;&gt;" AnchorPane.topAnchor="80.0" fx:id="startButton" onAction="#startAlgorithm" />
-      <Button layoutX="260.0" layoutY="145.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="Set key" AnchorPane.bottomAnchor="80.0" />
+      <Button layoutX="260.0" layoutY="145.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="Set key" AnchorPane.bottomAnchor="80.0" onAction="#setKey" />
    </children>
 </AnchorPane>

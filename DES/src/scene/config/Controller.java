@@ -18,6 +18,8 @@ public class Controller implements Initializable {
     @FXML
     private Button startButton;
 
+    private static String key;
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -27,11 +29,34 @@ public class Controller implements Initializable {
     @FXML
     public void startAlgorithm(ActionEvent actionEvent) {
         if (firstTextArea.getText().isEmpty()){
-            Alert alert  = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Input field is empty.\nPlease, write some text and try again!");
-            alert.showAndWait();
+            alertBox(new Alert(Alert.AlertType.ERROR), "Error", null,
+                    "Input field is empty.\nPlease, write some text and try again!");
+            return;
+        } else if (key == null){
+            alertBox(new Alert(Alert.AlertType.ERROR), "Error", null,
+                    "Input field is empty.\nPlease, enter key and try again!");
+            return;
         }
+    }
+
+    private void alertBox(Alert alert, String title, String headerText, String message) {
+        alert.setTitle(title);
+        alert.setHeaderText(headerText);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    @FXML
+    public void setKey(ActionEvent actionEvent) throws Exception {
+        KeyWindow keyWindow = new KeyWindow();
+        keyWindow.start();
+    }
+
+    public static String getKey() {
+        return key;
+    }
+
+    public static void setKey(String key) {
+        Controller.key = key;
     }
 }
