@@ -1,5 +1,6 @@
 package scene.config;
 
+import algorithm.Encoder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -37,6 +38,9 @@ public class Controller implements Initializable {
                     "Input field is empty.\nPlease, enter key and try again!");
             return;
         }
+
+        Encoder encoder = new Encoder();
+        encoder.startEncoder(firstTextArea.getText(), key);
     }
 
     private void alertBox(Alert alert, String title, String headerText, String message) {

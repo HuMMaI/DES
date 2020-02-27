@@ -7,6 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import sun.awt.SunHints;
 
+import java.math.BigInteger;
+
 public class KeyController {
     @FXML
     private TextField keyField;
@@ -20,6 +22,12 @@ public class KeyController {
             alert.setTitle("Error");
             alert.setHeaderText(null);
             alert.setContentText("Input field is empty.\nPlease, enter key and try again!");
+            alert.showAndWait();
+        } if (new BigInteger(keyField.getText().getBytes()).toString(2).length() > 64){
+            Alert alert  = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Error");
             alert.showAndWait();
         } else {
             Controller.setKey(keyField.getText());
