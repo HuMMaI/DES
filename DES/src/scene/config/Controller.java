@@ -40,7 +40,9 @@ public class Controller implements Initializable {
         }
 
         Encoder encoder = new Encoder();
-        encoder.startEncoder(firstTextArea.getText(), key);
+        StringBuilder encryptedText = encoder.startEncoder(firstTextArea.getText(), key);
+
+        secondTextArea.setText(encryptedText.toString());
     }
 
     private void alertBox(Alert alert, String title, String headerText, String message) {
