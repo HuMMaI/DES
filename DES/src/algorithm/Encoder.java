@@ -3,8 +3,8 @@ package algorithm;
 import java.math.BigInteger;
 
 public class Encoder {
-    public StringBuilder startEncoder(String text, String key){
-        StringBuilder permutationBinaryStr = initialPermutation(text);
+    public StringBuilder startEncoder(StringBuilder text, String key){
+        StringBuilder permutationBinaryStr = permutation(text, Tools.ip, PermutationType.INITIAL_PERMUTATION);
         System.out.println("Permutation binary: " + permutationBinaryStr + '|' + permutationBinaryStr.length());
         StringBuilder[] binaryKeys = keysGenerator(key);
 
@@ -15,8 +15,6 @@ public class Encoder {
         System.out.println("EncText: " + encryptionText + " | length: " + encryptionText.length());
 
         return encryptionText;
-//        String s = new BigInteger(key.getBytes()).toString();
-//        System.out.println("text: " + s);
     }
 
     private StringBuilder parseString(StringBuilder encryptionText) {
@@ -46,11 +44,11 @@ public class Encoder {
     }
 
     private StringBuilder rightBlockOperations(StringBuilder leftBlock, StringBuilder rightBlock, StringBuilder binaryKey) {
-        StringBuilder nextRightBlock = new StringBuilder(expansionPermutation(rightBlock));
+        StringBuilder nextRightBlock = permutation(rightBlock, Tools.ep, PermutationType.EXPANSION_PERMUTATION);
         nextRightBlock = keyXorring(nextRightBlock, binaryKey);
         nextRightBlock = bitExpansion(nextRightBlock, 48);
         nextRightBlock = sBox(nextRightBlock);
-        nextRightBlock = pBox(nextRightBlock);
+        nextRightBlock = permutation(nextRightBlock, Tools.pBoxPerm, PermutationType.P_BOX_PERMUTATION);
         nextRightBlock = leftBlockXorring(leftBlock, nextRightBlock);
         nextRightBlock = bitExpansion(nextRightBlock, 32);
 
@@ -61,23 +59,6 @@ public class Encoder {
         return new StringBuilder((new BigInteger(nextRightBlock.toString(), 2)
                 .xor(new BigInteger(leftBlock.toString(), 2)))
                 .toString(2));
-    }
-
-    private StringBuilder pBox(StringBuilder nextRightBlock) {
-        int pBoxPerm[][] = {
-                {16, 7, 20, 21, 29, 12, 28, 17, 1, 15, 23, 26, 5, 18, 31, 10},
-                {2, 8, 24, 14, 32, 27, 3, 9, 19, 13, 30, 6, 22, 11, 4, 25}
-        };
-
-        StringBuilder permutationStr = new StringBuilder();
-
-        for (int i = 0; i < pBoxPerm.length; i++){
-            for (int j = 0; j < pBoxPerm[i].length; j++){
-                permutationStr.append(nextRightBlock.charAt(pBoxPerm[i][j] - 1));
-            }
-        }
-
-        return permutationStr;
     }
 
     private StringBuilder sBox(StringBuilder nextRightBlock) {
@@ -163,60 +144,67 @@ public class Encoder {
     }
 
     private StringBuilder keyXorring(StringBuilder nextRightBlock, StringBuilder binaryKey) {
-        StringBuilder xorStr =
-                new StringBuilder((new BigInteger(nextRightBlock.toString(), 2)
-                        .xor(new BigInteger(binaryKey.toString(), 2)))
-                        .toString(2));
-
-        return xorStr;
+        return new StringBuilder((new BigInteger(nextRightBlock.toString(), 2)
+                .xor(new BigInteger(binaryKey.toString(), 2)))
+                .toString(2));
     }
 
-    private StringBuilder expansionPermutation(StringBuilder rightBlock) {
-        int ep[][] = {
-                {32, 1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9},
-                {8, 9, 10, 11, 12, 13, 12, 13, 14, 15, 16, 17},
-                {16, 17, 18, 19, 20, 21, 20, 21, 22, 23, 24, 25},
-                {24, 25, 26, 27, 28, 29, 28, 29, 30, 31, 32, 1}
-        };
+    private StringBuilder permutation(StringBuilder text, int[][] permutationRule, PermutationType permutationType){
+        StringBuilder binaryStr = new StringBuilder();
+
+        switch (permutationType){
+            case INITIAL_PERMUTATION:
+
+            case KEY_PERMUTATION:
+                binaryStr.append(parseBit(text, 64));
+                break;
+
+            case EXPANSION_PERMUTATION:
+
+            case P_BOX_PERMUTATION:
+
+            case COMPRESS_PERMUTATION:
+                binaryStr.append(text);
+                break;
+        }
+
+        System.out.println("Binary: " + binaryStr + "|" + binaryStr.length());
 
         StringBuilder permutationStr = new StringBuilder();
 
-        for (int i = 0; i < ep.length; i++){
-            for (int j = 0; j < ep[i].length; j++){
-                permutationStr.append(rightBlock.charAt(ep[i][j] - 1));
+        for (int i = 0; i < permutationRule.length; i++){
+            for (int j = 0; j < permutationRule[i].length; j++){
+                permutationStr.append(binaryStr.charAt(permutationRule[i][j] - 1));
             }
         }
 
         return permutationStr;
     }
 
-    private StringBuilder initialPermutation(String text){
-        int ip[][] = {
-                {58, 50, 42, 34, 26, 18, 10, 2},
-                {60, 52, 44, 36, 28, 20, 12, 4},
-                {62, 54, 46, 38, 30, 22, 14, 6},
-                {64, 56, 48, 40, 32, 24, 16, 8},
-                {57, 49, 41, 33, 25, 17, 9, 1},
-                {59, 51, 43, 35, 27, 19, 11, 3},
-                {61, 53, 45, 37, 29, 21, 13, 5},
-                {63, 55, 47, 39, 31, 23, 15, 7}
-        };
+    private StringBuilder[] keysGenerator(String key){
+        StringBuilder permutationKey = permutation(new StringBuilder(key), Tools.kp, PermutationType.KEY_PERMUTATION);
 
-        StringBuilder textToBit = parseBit(text, 64);
-        System.out.println("Binary: " + textToBit + "|" + textToBit.length());
+        StringBuilder c0 = new StringBuilder(permutationKey.substring(0, 28));
+        StringBuilder d0 = new StringBuilder(permutationKey.substring(28, permutationKey.length()));
 
-        StringBuilder permutationStr = new StringBuilder();
+        StringBuilder[] keys = bitShift(c0, d0);
 
-        for (int i = 0; i < ip.length; i++){
-            for (int j = 0; j < ip[i].length; j++){
-                permutationStr.append(textToBit.charAt(ip[i][j] - 1));
-            }
+        StringBuilder[] compressionKeys = new StringBuilder[16];
+
+        for (int i = 0; i < keys.length; i++){
+            compressionKeys[i] = permutation(keys[i], Tools.cp, PermutationType.COMPRESS_PERMUTATION);
         }
 
-        return permutationStr;
+        //TODO Delete outputting
+        System.out.println("Perm keys::");
+        for (int i = 0; i < compressionKeys.length; i++){
+            System.out.println("Key[" + i + "] : " + compressionKeys[i] + " | length: " + compressionKeys[i].length());
+        }
+
+        return compressionKeys;
     }
 
-    private StringBuilder parseBit(String text, int numberOfBits) {
+    private StringBuilder parseBit(StringBuilder text, int numberOfBits) {
         StringBuilder bitStr = new StringBuilder();
 
         for (int i = 0; i < text.length(); i++){
@@ -231,60 +219,6 @@ public class Encoder {
 
 
         return bitStr.length() < 64 ? bitExpansion(bitStr, numberOfBits) : bitStr;
-    }
-
-    private StringBuilder[] keysGenerator(String key){
-        int kp[][] = {
-                {57, 49, 41, 33, 25, 17, 9, 1, 58, 50, 42, 34, 26, 18},
-                {10, 2, 59, 51, 43, 35, 27, 19, 11, 3, 60, 52, 44, 36},
-                {63, 55, 47, 39, 31, 23, 15, 7, 62, 54, 46, 38, 30, 22},
-                {14, 6, 61, 53, 45, 37, 29, 21, 13, 5, 28, 20, 12, 4}
-        };
-
-        StringBuilder keyToBit = new StringBuilder(new BigInteger(key.getBytes()).toString(2));
-
-        if (keyToBit.length() < 64){
-            keyToBit = bitExpansion(keyToBit, 64);
-        }
-
-        StringBuilder permutationKey = new StringBuilder();
-
-        for (int i = 0; i < kp.length; i++){
-            for (int j = 0; j < kp[i].length; j++){
-                permutationKey.append(keyToBit.charAt(kp[i][j] - 1));
-            }
-        }
-
-        StringBuilder c0 = new StringBuilder(permutationKey.substring(0, 28));
-        StringBuilder d0 = new StringBuilder(permutationKey.substring(28, permutationKey.length()));
-
-        StringBuilder[] keys = bitShift(c0, d0);
-
-        int cp[][] = {
-                {14, 17, 11, 24, 1, 5, 3, 28, 15, 6, 21, 10},
-                {23, 19, 12, 4, 26, 8, 16, 7, 27, 20, 13, 2},
-                {41, 52, 31, 37, 47, 55, 30, 40, 51, 45, 33, 48},
-                {44, 49, 39, 56, 34, 53, 46, 42, 50, 36, 29, 32}
-        };
-
-        StringBuilder compressionKeys[] = new StringBuilder[16];
-
-        for (int i = 0; i < keys.length; i++){
-            compressionKeys[i] = new StringBuilder();
-            for (int j = 0; j < cp.length; j++){
-                for (int k = 0; k < cp[j].length; k++){
-                    compressionKeys[i].append(keys[i].charAt(cp[j][k] - 1));
-                }
-            }
-        }
-
-        //TODO Delete outputting
-        System.out.println("Perm keys::");
-        for (int i = 0; i < compressionKeys.length; i++){
-            System.out.println("Key[" + i + "] : " + compressionKeys[i] + " | length: " + compressionKeys[i].length());
-        }
-
-        return compressionKeys;
     }
 
     private StringBuilder[] bitShift(StringBuilder c0, StringBuilder d0){

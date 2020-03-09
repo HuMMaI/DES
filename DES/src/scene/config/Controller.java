@@ -40,7 +40,7 @@ public class Controller implements Initializable {
         }
 
         Encoder encoder = new Encoder();
-        StringBuilder encryptedText = encoder.startEncoder(firstTextArea.getText(), key);
+        StringBuilder encryptedText = encoder.startEncoder(new StringBuilder(firstTextArea.getText()), key);
 
         secondTextArea.setText(encryptedText.toString());
     }
