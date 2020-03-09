@@ -1,0 +1,9 @@
+package algorithm;
+
+public enum PermutationType {
+    INITIAL_PERMUTATION,
+    EXPANSION_PERMUTATION,
+    KEY_PERMUTATION,
+    COMPRESS_PERMUTATION,
+    P_BOX_PERMUTATION
+}
