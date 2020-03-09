@@ -1,12 +1,30 @@
 package algorithm;
 
 import java.math.BigInteger;
+import java.util.concurrent.CountDownLatch;
 
 public class Encoder {
     public StringBuilder startEncoder(StringBuilder text, String key){
-        StringBuilder permutationBinaryStr = permutation(text, Tools.ip, PermutationType.INITIAL_PERMUTATION);
-        System.out.println("Permutation binary: " + permutationBinaryStr + '|' + permutationBinaryStr.length());
+        StringBuilder permutationBinaryStr = new StringBuilder();
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+
+        Runnable initPerm = () -> {
+            permutationBinaryStr.append(permutation(text, Tools.ip, PermutationType.INITIAL_PERMUTATION));
+            countDownLatch.countDown();
+        };
+
+        Thread initPermThread = new Thread(initPerm);
+        initPermThread.start();
+
         StringBuilder[] binaryKeys = keysGenerator(key);
+
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        initPermThread.interrupt();
 
         StringBuilder encryptionText = encryptionRounds(permutationBinaryStr, binaryKeys);
         System.out.println("EncTextBin: " + encryptionText + " | length: " + encryptionText.length());
@@ -46,11 +64,11 @@ public class Encoder {
     private StringBuilder rightBlockOperations(StringBuilder leftBlock, StringBuilder rightBlock, StringBuilder binaryKey) {
         StringBuilder nextRightBlock = permutation(rightBlock, Tools.ep, PermutationType.EXPANSION_PERMUTATION);
         nextRightBlock = keyXorring(nextRightBlock, binaryKey);
-        nextRightBlock = bitExpansion(nextRightBlock, 48);
+        bitExpansion(nextRightBlock, 48);
         nextRightBlock = sBox(nextRightBlock);
         nextRightBlock = permutation(nextRightBlock, Tools.pBoxPerm, PermutationType.P_BOX_PERMUTATION);
         nextRightBlock = leftBlockXorring(leftBlock, nextRightBlock);
-        nextRightBlock = bitExpansion(nextRightBlock, 32);
+        bitExpansion(nextRightBlock, 32);
 
         return nextRightBlock;
     }
@@ -62,7 +80,7 @@ public class Encoder {
     }
 
     private StringBuilder sBox(StringBuilder nextRightBlock) {
-        int sBoxes[][][] = {
+        int[][][] sBoxes = {
                 {
                         {14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7},
                         {0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8},
@@ -226,15 +244,33 @@ public class Encoder {
 
         int[] shiftRule = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
-        //TODO Add threads
-
         for (int i = 0; i < keys.length; i++){
             StringBuilder c1 = new StringBuilder(new BigInteger(c0.toString(), 2).shiftLeft(shiftRule[i]).toString(2));
             StringBuilder d1 = new StringBuilder(new BigInteger(d0.toString(), 2).shiftLeft(shiftRule[i]).toString(2));
 
             if (c1.length() > 28 || d1.length() > 28){
-                c1 = sizeChecker(c1);
-                d1 = sizeChecker(d1);
+                StringBuilder finalC = c1;
+                CountDownLatch countDownLatch = new CountDownLatch(1);
+
+                Runnable keyShift = () -> {
+                    sizeChecker(finalC);
+                    countDownLatch.countDown();
+                };
+
+                Thread keyShiftThread = new Thread(keyShift);
+                keyShiftThread.start();
+
+                sizeChecker(d1);
+
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                keyShiftThread.interrupt();
+
+                c1 = finalC;
             }
 
             if (c1.length() < 28 || d1.length() < 28){
@@ -256,7 +292,7 @@ public class Encoder {
         return keys;
     }
 
-    private StringBuilder sizeChecker(StringBuilder str) {
+    private void sizeChecker(StringBuilder str) {
         int delta = str.length() - 28;
 
         if (delta == 1){
@@ -266,8 +302,6 @@ public class Encoder {
             str.replace(str.length() - 2, str.length(), str.substring(0, 2));
             str.delete(0, 2);
         }
-
-        return str;
     }
 
     //TODO Delete duplications
