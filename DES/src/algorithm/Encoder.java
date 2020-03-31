@@ -1,15 +1,34 @@
 package algorithm;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class Encoder {
     public StringBuilder startEncoder(StringBuilder text, String key){
-        StringBuilder permutationBinaryStr = new StringBuilder();
-        CountDownLatch countDownLatch = new CountDownLatch(1);
+        int numberOfSplits = (int) Math.ceil(text.length() / 8.0);
 
+        List<StringBuilder> textBlocks = new ArrayList<>();
+
+        for (int i = 0, j = 0; i < numberOfSplits; i++, j += 8){
+            int k = j + 8;
+
+            if (i == numberOfSplits - 1){
+                k = text.length();
+            }
+
+            textBlocks.add(new StringBuilder(text.substring(j, k)));
+        }
+
+        List<StringBuilder> permutationBinaryBlocks = new ArrayList<>();
+        CountDownLatch countDownLatch = new CountDownLatch(1);
         Runnable initPerm = () -> {
-            permutationBinaryStr.append(permutation(text, Tools.ip, PermutationType.INITIAL_PERMUTATION));
+            for (int i = 0; i < textBlocks.size(); i++){
+                StringBuilder permutation = permutation(textBlocks.get(i), Tools.ip, PermutationType.INITIAL_PERMUTATION);
+                permutationBinaryBlocks.add(permutation);
+            }
+
             countDownLatch.countDown();
         };
 
@@ -26,39 +45,62 @@ public class Encoder {
 
         initPermThread.interrupt();
 
-        StringBuilder encryptionText = encryptionRounds(permutationBinaryStr, binaryKeys);
-        System.out.println("EncTextBin: " + encryptionText + " | length: " + encryptionText.length());
+        List<StringBuilder> encryptionRounds = encryptionRounds(permutationBinaryBlocks, binaryKeys);
+        encryptionRounds.forEach(s -> System.out.println("EncTextBin: " + s + " | length: " + s.length()));
 
-        encryptionText = parseString(encryptionText);
-        System.out.println("EncText: " + encryptionText + " | length: " + encryptionText.length());
+        StringBuilder finalText = parseString(encryptionRounds);
+        System.out.println("EncText: " + finalText + " | length: " + finalText.length());
 
-        return encryptionText;
+        return finalText;
     }
 
-    private StringBuilder parseString(StringBuilder encryptionText) {
+    private StringBuilder parseString(List<StringBuilder> encryptionTexts) {
         StringBuilder str = new StringBuilder();
 
-        for (int i = 0, j = 8; j <= encryptionText.length(); i += 8, j += 8){
-            String buff = encryptionText.substring(i, j);
-            str.append((char)Integer.parseInt(buff, 2));
+        for (int i = 0; i < encryptionTexts.size(); i++){
+            for (int j = 0, k = 8; k <= encryptionTexts.get(i).length(); j += 8, k += 8){
+                String buff = encryptionTexts.get(i).substring(j, k);
+                str.append((char)Integer.parseInt(buff, 2));
+            }
         }
-
         return str;
     }
 
-    private StringBuilder encryptionRounds(StringBuilder permutationBinaryStr, StringBuilder[] binaryKeys) {
-        StringBuilder[] leftBlock = new StringBuilder[17];
-        StringBuilder[] rightBlock = new StringBuilder[17];
+    private List<StringBuilder> encryptionRounds(List<StringBuilder> permutationBinaryStr, StringBuilder[] binaryKeys) {
+        List<StringBuilder[]> leftBlocks = new ArrayList<>();
+        List<StringBuilder[]> rightBlocks = new ArrayList<>();
 
-        leftBlock[0] = new StringBuilder(permutationBinaryStr.substring(0, 32));
-        rightBlock[0] = new StringBuilder(permutationBinaryStr.substring(32, permutationBinaryStr.length()));
-
-        for (int i = 1; i < leftBlock.length; i++){
-            leftBlock[i] = new StringBuilder(rightBlock[i - 1]);
-            rightBlock[i] = rightBlockOperations(leftBlock[i - 1], rightBlock[i - 1], binaryKeys[i - 1]);
+        for (int i = 0; i < permutationBinaryStr.size(); i++){
+            leftBlocks.add(new StringBuilder[17]);
+            rightBlocks.add(new StringBuilder[17]);
         }
 
-        return new StringBuilder().append(leftBlock[leftBlock.length - 1]).append(rightBlock[rightBlock.length - 1]);
+        System.out.println("!!!size: " + leftBlocks.get(0).length);
+
+        final int[] index = {0, 0};
+        leftBlocks.forEach(s -> {
+            s[0] = new StringBuilder(permutationBinaryStr.get(index[0]).substring(0, 32));
+            index[0]++;
+        });
+
+        rightBlocks.forEach(s -> {
+            s[0] = new StringBuilder(permutationBinaryStr.get(index[1]).substring(32, permutationBinaryStr.get(index[1]).length()));
+            index[1]++;
+        });
+
+        List<StringBuilder> results = new ArrayList<>();
+
+        for (int i = 0; i < leftBlocks.size(); i++){
+            for (int j = 1; j < leftBlocks.get(i).length; j++){
+                leftBlocks.get(i)[j] = new StringBuilder(rightBlocks.get(i)[j - 1]);
+                rightBlocks.get(i)[j] = rightBlockOperations(leftBlocks.get(i)[j - 1], rightBlocks.get(i)[j - 1], binaryKeys[j - 1]);
+            }
+            results.add(new StringBuilder()
+                    .append(leftBlocks.get(i)[leftBlocks.get(i).length - 1])
+                    .append(rightBlocks.get(i)[rightBlocks.get(i).length - 1]));
+        }
+
+        return results;
     }
 
     private StringBuilder rightBlockOperations(StringBuilder leftBlock, StringBuilder rightBlock, StringBuilder binaryKey) {

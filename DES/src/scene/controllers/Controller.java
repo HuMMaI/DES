@@ -1,4 +1,4 @@
-package scene.config;
+package scene.controllers;
 
 import algorithm.Encoder;
 import javafx.event.ActionEvent;
@@ -7,6 +7,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
+import scene.windows.KeyWindow;
 
 import java.net.URL;
 import java.util.ResourceBundle;

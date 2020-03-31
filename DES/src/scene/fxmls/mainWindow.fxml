@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane maxHeight="250.0" maxWidth="600.0" minHeight="250.0" minWidth="600.0" prefHeight="250.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scene.config.Controller">
+<AnchorPane maxHeight="250.0" maxWidth="600.0" minHeight="250.0" minWidth="600.0" prefHeight="250.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scene.controllers.Controller">
    <children>
       <TextArea layoutX="21.0" layoutY="25.0" prefHeight="200.0" prefWidth="220.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="21.0" AnchorPane.topAnchor="25.0" fx:id="firstTextArea" />
       <TextArea layoutX="356.0" layoutY="25.0" prefHeight="200.0" prefWidth="220.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="360.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="25.0" fx:id="secondTextArea" />
