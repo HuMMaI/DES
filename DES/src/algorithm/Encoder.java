@@ -7,6 +7,9 @@ import java.util.concurrent.CountDownLatch;
 
 public class Encoder {
     public StringBuilder startEncoder(StringBuilder text, String key){
+        int charNum = text.charAt(0);
+        System.out.println("char: " + text + " | num: " + charNum + " | " + Integer.toBinaryString(charNum));
+
         int numberOfSplits = (int) Math.ceil(text.length() / 8.0);
 
         List<StringBuilder> textBlocks = new ArrayList<>();
@@ -60,6 +63,9 @@ public class Encoder {
         for (int i = 0; i < encryptionTexts.size(); i++){
             for (int j = 0, k = 8; k <= encryptionTexts.get(i).length(); j += 8, k += 8){
                 String buff = encryptionTexts.get(i).substring(j, k);
+
+                System.out.println("substr bits: " + buff + " | num: " + (char)Integer.parseInt(buff, 2));
+
                 str.append((char)Integer.parseInt(buff, 2));
             }
         }
@@ -267,8 +273,11 @@ public class Encoder {
     private StringBuilder parseBit(StringBuilder text, int numberOfBits) {
         StringBuilder bitStr = new StringBuilder();
 
+        System.out.println("input text: " + text);
+
         for (int i = 0; i < text.length(); i++){
-            String bits = new BigInteger(String.valueOf(text.charAt(i)).getBytes()).toString(2);
+            int charInt = text.charAt(i);
+            String bits = Integer.toBinaryString(charInt);
 
             if (bits.length() < 8){
                 bits = bitExpansion(new StringBuilder(bits), 8).toString();
