@@ -51,7 +51,13 @@ public class Encoder {
         List<StringBuilder> encryptionRounds = encryptionRounds(permutationBinaryBlocks, binaryKeys);
         encryptionRounds.forEach(s -> System.out.println("EncTextBin: " + s + " | length: " + s.length()));
 
-        StringBuilder finalText = parseString(encryptionRounds);
+        List<StringBuilder> finalPermText = new ArrayList<>();
+        System.out.println(encryptionRounds.get(0));
+        for (int i = 0; i < encryptionRounds.size(); i++){
+            finalPermText.add(permutation(encryptionRounds.get(i), Tools.fp, PermutationType.FINAL_PERMUTATION));
+        }
+
+        StringBuilder finalText = parseString(finalPermText);
         System.out.println("EncText: " + finalText + " | length: " + finalText.length());
 
         return finalText;
@@ -228,6 +234,8 @@ public class Encoder {
             case EXPANSION_PERMUTATION:
 
             case P_BOX_PERMUTATION:
+
+            case FINAL_PERMUTATION:
 
             case COMPRESS_PERMUTATION:
                 binaryStr.append(text);
