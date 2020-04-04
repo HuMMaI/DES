@@ -2,5 +2,7 @@ package algorithm;
 
 public enum DESMode {
     ENCRYPTION,
-    DECRYPTION
+    ENCRYPTION_CYRILLIC,
+    DECRYPTION,
+    DECRYPTION_CYRILLIC
 }

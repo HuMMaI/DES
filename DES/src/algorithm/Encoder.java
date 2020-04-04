@@ -10,13 +10,20 @@ public class Encoder {
     public String[] startEncoder(StringBuilder[] strBinMapping, String key, DESMode desMode) {
         StringBuilder text = strBinMapping[0];
         StringBuilder bin = strBinMapping[1];
+        int numberOfSymbols = 8;
+        int numberOfBitsSplit = 8;
+
+        if (desMode.equals(DESMode.ENCRYPTION_CYRILLIC) || desMode.equals(DESMode.DECRYPTION_CYRILLIC)){
+            numberOfBitsSplit = 16;
+            numberOfSymbols = 4;
+        }
 
         List<StringBuilder> binaryText = new ArrayList<>();
         if (bin.toString().equals("")){
-            List<StringBuilder> split = textSplitter(text, 8);
+            List<StringBuilder> split = textSplitter(text, numberOfSymbols);
 
             for (int i = 0; i < split.size(); i++){
-                binaryText.add(parseBit(split.get(i), 64));
+                binaryText.add(parseBit(split.get(i), 64, numberOfBitsSplit));
             }
         } else {
             binaryText = textSplitter(bin, 64);
@@ -59,11 +66,34 @@ public class Encoder {
                 .map(Object::toString)
                 .collect(Collectors.joining());
 
-        StringBuilder finalText = parseString(finalPermText);
+        StringBuilder finalText = parseString(finalPermText, numberOfBitsSplit);
 
         String[] finalStrBinMapping = {finalText.toString(), finalBinText};
 
         return finalStrBinMapping;
+    }
+
+    private int count(StringBuilder text) {
+        StringBuilder textCopy = new StringBuilder(text);
+        int numberOfBits = 8;
+
+        char[] chars = textCopy.toString().toCharArray();
+        List<Character> charsList = new ArrayList<>();
+
+        for (char sym: chars) {
+            charsList.add(sym);
+        }
+
+        Character character = charsList.stream()
+                .filter(bin -> (int) bin > 255)
+                .findAny()
+                .orElse(null);
+
+        if (character != null){
+            numberOfBits = 16;
+        }
+
+        return numberOfBits;
     }
 
     private List<StringBuilder> textSplitter(StringBuilder text, int numberOfSymbols) {
@@ -78,7 +108,9 @@ public class Encoder {
                 k = text.length();
             }
 
-            textBlocks.add(new StringBuilder(text.substring(j, k)));
+            StringBuilder split = new StringBuilder(text.substring(j, k));
+
+            textBlocks.add(split);
         }
 
         return textBlocks;
@@ -88,7 +120,8 @@ public class Encoder {
         StringBuilder binaryStr = new StringBuilder();
 
         if (permutationType.equals(PermutationType.KEY_PERMUTATION)){
-            binaryStr.append(parseBit(text, 64));
+            //TODO key cyrillic
+            binaryStr.append(parseBit(text, 64, 8));
         } else {
             binaryStr.append(text);
         }
@@ -104,11 +137,11 @@ public class Encoder {
         return permutationStr;
     }
 
-    private StringBuilder parseString(List<StringBuilder> encryptionTexts) {
+    private StringBuilder parseString(List<StringBuilder> encryptionTexts, int split) {
         StringBuilder str = new StringBuilder();
 
         for (int i = 0; i < encryptionTexts.size(); i++) {
-            for (int j = 0, k = 8; k <= encryptionTexts.get(i).length(); j += 8, k += 8) {
+            for (int j = 0, k = split; k <= encryptionTexts.get(i).length(); j += split, k += split) {
                 String buff = encryptionTexts.get(i).substring(j, k);
 
                 str.append((char) Integer.parseInt(buff, 2));
@@ -140,7 +173,7 @@ public class Encoder {
         List<StringBuilder> results = new ArrayList<>();
 
 
-        if (desMode.equals(DESMode.DECRYPTION)) {
+        if (desMode.equals(DESMode.DECRYPTION) || desMode.equals(DESMode.DECRYPTION_CYRILLIC)) {
             binaryKeys = keysReverse(binaryKeys);
         }
 
@@ -339,20 +372,19 @@ public class Encoder {
         return keys;
     }
 
-    private StringBuilder parseBit(StringBuilder text, int numberOfBits) {
+    private StringBuilder parseBit(StringBuilder text, int numberOfBits, int split) {
         StringBuilder bitStr = new StringBuilder();
 
         for (int i = 0; i < text.length(); i++) {
             int charInt = text.charAt(i);
             String bits = Integer.toBinaryString(charInt);
 
-            if (bits.length() < 8) {
-                bits = bitExpansion(new StringBuilder(bits), 8).toString();
+            if (bits.length() < split) {
+                bits = bitExpansion(new StringBuilder(bits), split).toString();
             }
 
             bitStr.append(bits);
         }
-
 
         return bitStr.length() < 64 ? bitExpansion(bitStr, numberOfBits) : bitStr;
     }
