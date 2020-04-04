@@ -2,8 +2,6 @@ package scene.controllers;
 
 import algorithm.DESMode;
 import algorithm.Encoder;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -15,7 +13,6 @@ import scene.windows.KeyWindow;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 

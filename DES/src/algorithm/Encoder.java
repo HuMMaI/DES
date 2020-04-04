@@ -1,6 +1,5 @@
 package algorithm;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,22 +87,10 @@ public class Encoder {
     private StringBuilder permutation(StringBuilder text, int[][] permutationRule, PermutationType permutationType) {
         StringBuilder binaryStr = new StringBuilder();
 
-        switch (permutationType) {
-            case KEY_PERMUTATION:
-                binaryStr.append(parseBit(text, 64));
-                break;
-
-            case INITIAL_PERMUTATION:
-
-            case EXPANSION_PERMUTATION:
-
-            case P_BOX_PERMUTATION:
-
-            case FINAL_PERMUTATION:
-
-            case COMPRESS_PERMUTATION:
-                binaryStr.append(text);
-                break;
+        if (permutationType.equals(PermutationType.KEY_PERMUTATION)){
+            binaryStr.append(parseBit(text, 64));
+        } else {
+            binaryStr.append(text);
         }
 
         StringBuilder permutationStr = new StringBuilder();
