@@ -1,11 +1,15 @@
 package scene.controllers;
 
+import algorithm.DESMode;
 import algorithm.Encoder;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import scene.windows.KeyWindow;
 
@@ -19,6 +23,8 @@ public class Controller implements Initializable {
     private TextArea secondTextArea;
     @FXML
     private Button startButton;
+    @FXML
+    private ChoiceBox algorithmMode;
 
     private static String key;
 
@@ -30,6 +36,8 @@ public class Controller implements Initializable {
 
     @FXML
     public void startAlgorithm(ActionEvent actionEvent) {
+        String mode = algorithmMode.getValue() == null ? "" : algorithmMode.getValue().toString();
+
         if (firstTextArea.getText().isEmpty()){
             alertBox(new Alert(Alert.AlertType.ERROR), "Error", null,
                     "Input field is empty.\nPlease, write some text and try again!");
@@ -38,10 +46,16 @@ public class Controller implements Initializable {
             alertBox(new Alert(Alert.AlertType.ERROR), "Error", null,
                     "Input field is empty.\nPlease, enter key and try again!");
             return;
+        } else if (mode.isEmpty()){
+            alertBox(new Alert(Alert.AlertType.ERROR), "Error", null,
+                    "Mode not selected.\nPlease, select a mode and try again!");
+            return;
         }
 
         Encoder encoder = new Encoder();
-        StringBuilder encryptedText = encoder.startEncoder(new StringBuilder(firstTextArea.getText()), key);
+        String encryptedText =
+                encoder.startEncoder(new StringBuilder(firstTextArea.getText()),
+                        key, DESMode.valueOf(mode.toUpperCase()));
 
         secondTextArea.setText(encryptedText.toString());
     }
