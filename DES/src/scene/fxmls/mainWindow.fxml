@@ -20,8 +20,8 @@
             </FXCollections>
          </items>
       </ChoiceBox>
-      <TextArea layoutX="21.0" layoutY="160.0" prefHeight="85.0" prefWidth="220.0" />
-      <TextArea layoutX="360.0" layoutY="160.0" prefHeight="85.0" prefWidth="220.0" />
+      <TextArea fx:id="firstBinTextArea" layoutX="21.0" layoutY="160.0" prefHeight="85.0" prefWidth="220.0" />
+      <TextArea fx:id="secondBinTextArea" layoutX="360.0" layoutY="160.0" prefHeight="85.0" prefWidth="220.0" />
       <Label layoutX="21.0" layoutY="16.0" text="Text:">
          <font>
             <Font name="Courier New" size="16.0" />

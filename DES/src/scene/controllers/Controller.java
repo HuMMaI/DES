@@ -14,6 +14,9 @@ import javafx.scene.control.TextArea;
 import scene.windows.KeyWindow;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -21,6 +24,10 @@ public class Controller implements Initializable {
     private TextArea firstTextArea;
     @FXML
     private TextArea secondTextArea;
+    @FXML
+    private TextArea firstBinTextArea;
+    @FXML
+    private TextArea secondBinTextArea;
     @FXML
     private Button startButton;
     @FXML
@@ -38,7 +45,7 @@ public class Controller implements Initializable {
     public void startAlgorithm(ActionEvent actionEvent) {
         String mode = algorithmMode.getValue() == null ? "" : algorithmMode.getValue().toString();
 
-        if (firstTextArea.getText().isEmpty()){
+        if (firstTextArea.getText().isEmpty() && firstBinTextArea.getText().isEmpty()){
             alertBox(new Alert(Alert.AlertType.ERROR), "Error", null,
                     "Input field is empty.\nPlease, write some text and try again!");
             return;
@@ -50,6 +57,27 @@ public class Controller implements Initializable {
             alertBox(new Alert(Alert.AlertType.ERROR), "Error", null,
                     "Mode not selected.\nPlease, select a mode and try again!");
             return;
+        }
+
+        if (!firstBinTextArea.getText().isEmpty()){
+            char[] binChars = firstBinTextArea.getText().toCharArray();
+            List<Character> binList = new ArrayList<>();
+
+            for (char bin: binChars) {
+                binList.add(bin);
+            }
+
+            Character result = binList.stream()
+                    .filter(bin -> !bin.equals('0'))
+                    .filter(bin -> !bin.equals('1'))
+                    .findAny()
+                    .orElse(null);
+
+            if (result != null){
+                alertBox(new Alert(Alert.AlertType.ERROR), "Error", null,
+                        "Binary text set incorrectly.\nPlease, try again!");
+                return;
+            }
         }
 
         Encoder encoder = new Encoder();
