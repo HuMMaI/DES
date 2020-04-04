@@ -1,23 +1,21 @@
 package algorithm;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class Encoder {
-    public StringBuilder startEncoder(StringBuilder text, String key){
-        int charNum = text.charAt(0);
-        System.out.println("char: " + text + " | num: " + charNum + " | " + Integer.toBinaryString(charNum));
-
+    public String startEncoder(StringBuilder text, String key, DESMode desMode) {
         int numberOfSplits = (int) Math.ceil(text.length() / 8.0);
 
         List<StringBuilder> textBlocks = new ArrayList<>();
 
-        for (int i = 0, j = 0; i < numberOfSplits; i++, j += 8){
+        for (int i = 0, j = 0; i < numberOfSplits; i++, j += 8) {
             int k = j + 8;
 
-            if (i == numberOfSplits - 1){
+            if (i == numberOfSplits - 1) {
                 k = text.length();
             }
 
@@ -27,7 +25,7 @@ public class Encoder {
         List<StringBuilder> permutationBinaryBlocks = new ArrayList<>();
         CountDownLatch countDownLatch = new CountDownLatch(1);
         Runnable initPerm = () -> {
-            for (int i = 0; i < textBlocks.size(); i++){
+            for (int i = 0; i < textBlocks.size(); i++) {
                 StringBuilder permutation = permutation(textBlocks.get(i), Tools.ip, PermutationType.INITIAL_PERMUTATION);
                 permutationBinaryBlocks.add(permutation);
             }
@@ -38,7 +36,7 @@ public class Encoder {
         Thread initPermThread = new Thread(initPerm);
         initPermThread.start();
 
-        StringBuilder[] binaryKeys = keysGenerator(key);
+        StringBuilder[] binaryKeys = keysGenerator(key, desMode);
 
         try {
             countDownLatch.await();
@@ -48,46 +46,72 @@ public class Encoder {
 
         initPermThread.interrupt();
 
-        List<StringBuilder> encryptionRounds = encryptionRounds(permutationBinaryBlocks, binaryKeys);
-        encryptionRounds.forEach(s -> System.out.println("EncTextBin: " + s + " | length: " + s.length()));
+        List<StringBuilder> encryptionRounds = encryptionRounds(permutationBinaryBlocks, binaryKeys, desMode);
 
         List<StringBuilder> finalPermText = new ArrayList<>();
-        System.out.println(encryptionRounds.get(0));
-        for (int i = 0; i < encryptionRounds.size(); i++){
+
+        for (int i = 0; i < encryptionRounds.size(); i++) {
             finalPermText.add(permutation(encryptionRounds.get(i), Tools.fp, PermutationType.FINAL_PERMUTATION));
         }
 
         StringBuilder finalText = parseString(finalPermText);
-        System.out.println("EncText: " + finalText + " | length: " + finalText.length());
 
-        return finalText;
+        return finalText.toString();
+    }
+
+    private StringBuilder permutation(StringBuilder text, int[][] permutationRule, PermutationType permutationType) {
+        StringBuilder binaryStr = new StringBuilder();
+
+        switch (permutationType) {
+            case INITIAL_PERMUTATION:
+
+            case KEY_PERMUTATION:
+                binaryStr.append(parseBit(text, 64));
+                break;
+
+            case EXPANSION_PERMUTATION:
+
+            case P_BOX_PERMUTATION:
+
+            case FINAL_PERMUTATION:
+
+            case COMPRESS_PERMUTATION:
+                binaryStr.append(text);
+                break;
+        }
+
+        StringBuilder permutationStr = new StringBuilder();
+
+        for (int i = 0; i < permutationRule.length; i++) {
+            for (int j = 0; j < permutationRule[i].length; j++) {
+                permutationStr.append(binaryStr.charAt(permutationRule[i][j] - 1));
+            }
+        }
+
+        return permutationStr;
     }
 
     private StringBuilder parseString(List<StringBuilder> encryptionTexts) {
         StringBuilder str = new StringBuilder();
 
-        for (int i = 0; i < encryptionTexts.size(); i++){
-            for (int j = 0, k = 8; k <= encryptionTexts.get(i).length(); j += 8, k += 8){
+        for (int i = 0; i < encryptionTexts.size(); i++) {
+            for (int j = 0, k = 8; k <= encryptionTexts.get(i).length(); j += 8, k += 8) {
                 String buff = encryptionTexts.get(i).substring(j, k);
 
-                System.out.println("substr bits: " + buff + " | num: " + (char)Integer.parseInt(buff, 2));
-
-                str.append((char)Integer.parseInt(buff, 2));
+                str.append((char) Integer.parseInt(buff, 2));
             }
         }
         return str;
     }
 
-    private List<StringBuilder> encryptionRounds(List<StringBuilder> permutationBinaryStr, StringBuilder[] binaryKeys) {
+    private List<StringBuilder> encryptionRounds(List<StringBuilder> permutationBinaryStr, StringBuilder[] binaryKeys, DESMode desMode) {
         List<StringBuilder[]> leftBlocks = new ArrayList<>();
         List<StringBuilder[]> rightBlocks = new ArrayList<>();
 
-        for (int i = 0; i < permutationBinaryStr.size(); i++){
+        for (int i = 0; i < permutationBinaryStr.size(); i++) {
             leftBlocks.add(new StringBuilder[17]);
             rightBlocks.add(new StringBuilder[17]);
         }
-
-        System.out.println("!!!size: " + leftBlocks.get(0).length);
 
         final int[] index = {0, 0};
         leftBlocks.forEach(s -> {
@@ -102,17 +126,34 @@ public class Encoder {
 
         List<StringBuilder> results = new ArrayList<>();
 
-        for (int i = 0; i < leftBlocks.size(); i++){
-            for (int j = 1; j < leftBlocks.get(i).length; j++){
+
+        if (desMode.equals(DESMode.DECRYPTION)) {
+            binaryKeys = keysReverse(binaryKeys);
+        }
+
+        for (int i = 0; i < leftBlocks.size(); i++) {
+            for (int j = 1; j < leftBlocks.get(i).length; j++) {
                 leftBlocks.get(i)[j] = new StringBuilder(rightBlocks.get(i)[j - 1]);
                 rightBlocks.get(i)[j] = rightBlockOperations(leftBlocks.get(i)[j - 1], rightBlocks.get(i)[j - 1], binaryKeys[j - 1]);
             }
             results.add(new StringBuilder()
-                    .append(leftBlocks.get(i)[leftBlocks.get(i).length - 1])
-                    .append(rightBlocks.get(i)[rightBlocks.get(i).length - 1]));
+                    .append(rightBlocks.get(i)[rightBlocks.get(i).length - 1])
+                    .append(leftBlocks.get(i)[leftBlocks.get(i).length - 1]));
         }
 
         return results;
+    }
+
+    private StringBuilder[] keysReverse(StringBuilder[] binaryKeys) {
+        StringBuilder[] copyBinaryKeys = binaryKeys;
+
+        for (int i = 0; i < copyBinaryKeys.length / 2; i++) {
+            StringBuilder temp = copyBinaryKeys[i];
+            copyBinaryKeys[i] = copyBinaryKeys[copyBinaryKeys.length - i - 1];
+            copyBinaryKeys[copyBinaryKeys.length - i - 1] = temp;
+        }
+
+        return copyBinaryKeys;
     }
 
     private StringBuilder rightBlockOperations(StringBuilder leftBlock, StringBuilder rightBlock, StringBuilder binaryKey) {
@@ -146,7 +187,7 @@ public class Encoder {
                         {15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10},
                         {3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5},
                         {0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15},
-                        {13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12 ,0, 5, 14, 9}
+                        {13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9}
                 },
 
                 {
@@ -194,21 +235,20 @@ public class Encoder {
 
         StringBuilder[] fourBitStr = new StringBuilder[8];
 
-        System.out.println("length: " + nextRightBlock.length());
-        for (int i = 0, j = 0, k = 5; i < fourBitStr.length; i++, j+=6, k+=6){
+        for (int i = 0, j = 0, k = 5; i < fourBitStr.length; i++, j += 6, k += 6) {
             int row = Integer.parseInt(String.valueOf(nextRightBlock.charAt(j)) + nextRightBlock.charAt(k), 2);
             int column = Integer.parseInt(String.valueOf(nextRightBlock.substring(j + 1, k)), 2);
 
             fourBitStr[i] = new StringBuilder(Integer.toBinaryString(sBoxes[i][row][column]));
 
-            if (fourBitStr[i].length() < 4){
+            if (fourBitStr[i].length() < 4) {
                 fourBitStr[i] = bitExpansion(fourBitStr[i], 4);
             }
         }
 
         nextRightBlock = new StringBuilder();
 
-        for (int i = 0; i < fourBitStr.length; i++){
+        for (int i = 0; i < fourBitStr.length; i++) {
             nextRightBlock.append(fourBitStr[i]);
         }
 
@@ -221,93 +261,33 @@ public class Encoder {
                 .toString(2));
     }
 
-    private StringBuilder permutation(StringBuilder text, int[][] permutationRule, PermutationType permutationType){
-        StringBuilder binaryStr = new StringBuilder();
-
-        switch (permutationType){
-            case INITIAL_PERMUTATION:
-
-            case KEY_PERMUTATION:
-                binaryStr.append(parseBit(text, 64));
-                break;
-
-            case EXPANSION_PERMUTATION:
-
-            case P_BOX_PERMUTATION:
-
-            case FINAL_PERMUTATION:
-
-            case COMPRESS_PERMUTATION:
-                binaryStr.append(text);
-                break;
-        }
-
-        System.out.println("Binary: " + binaryStr + "|" + binaryStr.length());
-
-        StringBuilder permutationStr = new StringBuilder();
-
-        for (int i = 0; i < permutationRule.length; i++){
-            for (int j = 0; j < permutationRule[i].length; j++){
-                permutationStr.append(binaryStr.charAt(permutationRule[i][j] - 1));
-            }
-        }
-
-        return permutationStr;
-    }
-
-    private StringBuilder[] keysGenerator(String key){
+    private StringBuilder[] keysGenerator(String key, DESMode desMode) {
         StringBuilder permutationKey = permutation(new StringBuilder(key), Tools.kp, PermutationType.KEY_PERMUTATION);
 
         StringBuilder c0 = new StringBuilder(permutationKey.substring(0, 28));
         StringBuilder d0 = new StringBuilder(permutationKey.substring(28, permutationKey.length()));
 
-        StringBuilder[] keys = bitShift(c0, d0);
+        StringBuilder[] keys = bitShift(c0, d0, desMode);
 
         StringBuilder[] compressionKeys = new StringBuilder[16];
 
-        for (int i = 0; i < keys.length; i++){
+        for (int i = 0; i < keys.length; i++) {
             compressionKeys[i] = permutation(keys[i], Tools.cp, PermutationType.COMPRESS_PERMUTATION);
-        }
-
-        //TODO Delete outputting
-        System.out.println("Perm keys::");
-        for (int i = 0; i < compressionKeys.length; i++){
-            System.out.println("Key[" + i + "] : " + compressionKeys[i] + " | length: " + compressionKeys[i].length());
         }
 
         return compressionKeys;
     }
 
-    private StringBuilder parseBit(StringBuilder text, int numberOfBits) {
-        StringBuilder bitStr = new StringBuilder();
-
-        System.out.println("input text: " + text);
-
-        for (int i = 0; i < text.length(); i++){
-            int charInt = text.charAt(i);
-            String bits = Integer.toBinaryString(charInt);
-
-            if (bits.length() < 8){
-                bits = bitExpansion(new StringBuilder(bits), 8).toString();
-            }
-
-            bitStr.append(bits);
-        }
-
-
-        return bitStr.length() < 64 ? bitExpansion(bitStr, numberOfBits) : bitStr;
-    }
-
-    private StringBuilder[] bitShift(StringBuilder c0, StringBuilder d0){
+    private StringBuilder[] bitShift(StringBuilder c0, StringBuilder d0, DESMode desMode) {
         StringBuilder[] keys = new StringBuilder[16];
 
-        int[] shiftRule = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
+        for (int i = 0; i < keys.length; i++) {
+            StringBuilder c1 = new StringBuilder(new BigInteger(c0.toString(), 2)
+                    .shiftLeft(Tools.encryptionShiftRule[i]).toString(2));
+            StringBuilder d1 = new StringBuilder(new BigInteger(d0.toString(), 2)
+                    .shiftLeft(Tools.encryptionShiftRule[i]).toString(2));
 
-        for (int i = 0; i < keys.length; i++){
-            StringBuilder c1 = new StringBuilder(new BigInteger(c0.toString(), 2).shiftLeft(shiftRule[i]).toString(2));
-            StringBuilder d1 = new StringBuilder(new BigInteger(d0.toString(), 2).shiftLeft(shiftRule[i]).toString(2));
-
-            if (c1.length() > 28 || d1.length() > 28){
+            if (c1.length() > 28 || d1.length() > 28) {
                 StringBuilder finalC = c1;
                 CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -332,7 +312,7 @@ public class Encoder {
                 c1 = finalC;
             }
 
-            if (c1.length() < 28 || d1.length() < 28){
+            if (c1.length() < 28 || d1.length() < 28) {
                 c1 = new StringBuilder(bitExpansion(c1, 28));
                 d1 = new StringBuilder(bitExpansion(d1, 28));
             }
@@ -343,29 +323,42 @@ public class Encoder {
             keys[i] = new StringBuilder().append(c1).append(d1);
         }
 
-        //TODO Delete outputting
-        for (int i = 0; i < keys.length; i++){
-            System.out.println("Key[" + i + "] : " + keys[i] + " | length: " + keys[i].length());
+        return keys;
+    }
+
+    private StringBuilder parseBit(StringBuilder text, int numberOfBits) {
+        StringBuilder bitStr = new StringBuilder();
+
+        for (int i = 0; i < text.length(); i++) {
+            int charInt = text.charAt(i);
+            String bits = Integer.toBinaryString(charInt);
+
+            if (bits.length() < 8) {
+                bits = bitExpansion(new StringBuilder(bits), 8).toString();
+            }
+
+            bitStr.append(bits);
         }
 
-        return keys;
+
+        return bitStr.length() < 64 ? bitExpansion(bitStr, numberOfBits) : bitStr;
     }
 
     private void sizeChecker(StringBuilder str) {
         int delta = str.length() - 28;
 
-        if (delta == 1){
+        if (delta == 1) {
             str.replace(str.length() - 1, str.length(), String.valueOf(str.charAt(0)));
             str.deleteCharAt(0);
-        } else if (delta == 2){
+        } else if (delta == 2) {
             str.replace(str.length() - 2, str.length(), str.substring(0, 2));
             str.delete(0, 2);
         }
     }
 
     //TODO Delete duplications
-    private StringBuilder bitExpansion(StringBuilder bin, int numberOfBits){
-        while (bin.length() < numberOfBits){
+    private StringBuilder bitExpansion(StringBuilder bin, int numberOfBits) {
+        while (bin.length() < numberOfBits) {
             bin.insert(0, '0');
         }
 
