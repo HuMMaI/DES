@@ -42,5 +42,10 @@
             <Font name="Courier New" size="16.0" />
          </font>
       </Label>
+      <CheckBox fx:id="textMode" layoutX="260.0" layoutY="83.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="80.0" text="Cyrillic">
+         <font>
+            <Font name="Courier New" size="12.0" />
+         </font>
+      </CheckBox>
    </children>
 </AnchorPane>
