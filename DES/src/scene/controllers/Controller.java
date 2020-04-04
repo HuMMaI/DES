@@ -39,6 +39,7 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         secondTextArea.setEditable(false);
+        secondBinTextArea.setEditable(false);
     }
 
     @FXML
@@ -81,11 +82,16 @@ public class Controller implements Initializable {
         }
 
         Encoder encoder = new Encoder();
-        String encryptedText =
-                encoder.startEncoder(new StringBuilder(firstTextArea.getText()),
-                        key, DESMode.valueOf(mode.toUpperCase()));
+        StringBuilder[] strBinMapping = {
+                new StringBuilder(firstTextArea.getText()),
+                new StringBuilder(firstBinTextArea.getText())
+        };
 
-        secondTextArea.setText(encryptedText.toString());
+        String[] encryptedText =
+                encoder.startEncoder(strBinMapping, key, DESMode.valueOf(mode.toUpperCase()));
+
+        secondTextArea.setText(encryptedText[0]);
+        secondBinTextArea.setText(encryptedText[1]);
     }
 
     private void alertBox(Alert alert, String title, String headerText, String message) {

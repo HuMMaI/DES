@@ -5,28 +5,30 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 public class Encoder {
-    public String startEncoder(StringBuilder text, String key, DESMode desMode) {
-        int numberOfSplits = (int) Math.ceil(text.length() / 8.0);
+    public String[] startEncoder(StringBuilder[] strBinMapping, String key, DESMode desMode) {
+        StringBuilder text = strBinMapping[0];
+        StringBuilder bin = strBinMapping[1];
 
-        List<StringBuilder> textBlocks = new ArrayList<>();
+        List<StringBuilder> binaryText = new ArrayList<>();
+        if (bin.toString().equals("")){
+            List<StringBuilder> split = textSplitter(text, 8);
 
-        for (int i = 0, j = 0; i < numberOfSplits; i++, j += 8) {
-            int k = j + 8;
-
-            if (i == numberOfSplits - 1) {
-                k = text.length();
+            for (int i = 0; i < split.size(); i++){
+                binaryText.add(parseBit(split.get(i), 64));
             }
-
-            textBlocks.add(new StringBuilder(text.substring(j, k)));
+        } else {
+            binaryText = textSplitter(bin, 64);
         }
 
         List<StringBuilder> permutationBinaryBlocks = new ArrayList<>();
         CountDownLatch countDownLatch = new CountDownLatch(1);
+        List<StringBuilder> finalBinaryText = binaryText;
         Runnable initPerm = () -> {
-            for (int i = 0; i < textBlocks.size(); i++) {
-                StringBuilder permutation = permutation(textBlocks.get(i), Tools.ip, PermutationType.INITIAL_PERMUTATION);
+            for (int i = 0; i < finalBinaryText.size(); i++) {
+                StringBuilder permutation = permutation(finalBinaryText.get(i), Tools.ip, PermutationType.INITIAL_PERMUTATION);
                 permutationBinaryBlocks.add(permutation);
             }
 
@@ -54,20 +56,44 @@ public class Encoder {
             finalPermText.add(permutation(encryptionRounds.get(i), Tools.fp, PermutationType.FINAL_PERMUTATION));
         }
 
+        String finalBinText = finalPermText.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining());
+
         StringBuilder finalText = parseString(finalPermText);
 
-        return finalText.toString();
+        String[] finalStrBinMapping = {finalText.toString(), finalBinText};
+
+        return finalStrBinMapping;
+    }
+
+    private List<StringBuilder> textSplitter(StringBuilder text, int numberOfSymbols) {
+        int numberOfSplits = (int) Math.ceil(text.length() / (double)numberOfSymbols);
+
+        List<StringBuilder> textBlocks = new ArrayList<>();
+
+        for (int i = 0, j = 0; i < numberOfSplits; i++, j += numberOfSymbols) {
+            int k = j + numberOfSymbols;
+
+            if (i == numberOfSplits - 1) {
+                k = text.length();
+            }
+
+            textBlocks.add(new StringBuilder(text.substring(j, k)));
+        }
+
+        return textBlocks;
     }
 
     private StringBuilder permutation(StringBuilder text, int[][] permutationRule, PermutationType permutationType) {
         StringBuilder binaryStr = new StringBuilder();
 
         switch (permutationType) {
-            case INITIAL_PERMUTATION:
-
             case KEY_PERMUTATION:
                 binaryStr.append(parseBit(text, 64));
                 break;
+
+            case INITIAL_PERMUTATION:
 
             case EXPANSION_PERMUTATION:
 
