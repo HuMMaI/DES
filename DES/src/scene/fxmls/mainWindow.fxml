@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.collections.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<?import javafx.collections.FXCollections?>
-<?import java.lang.String?>
-<AnchorPane maxHeight="250.0" maxWidth="600.0" minHeight="250.0" minWidth="600.0" prefHeight="250.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scene.controllers.Controller">
+<AnchorPane maxHeight="270.0" maxWidth="600.0" minHeight="250.0" minWidth="600.0" prefHeight="270.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scene.controllers.Controller">
    <children>
-      <TextArea fx:id="firstTextArea" layoutX="21.0" layoutY="25.0" prefHeight="200.0" prefWidth="220.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="21.0" AnchorPane.topAnchor="25.0" />
-      <TextArea fx:id="secondTextArea" layoutX="356.0" layoutY="25.0" prefHeight="200.0" prefWidth="220.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="360.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="25.0" />
-      <Button fx:id="startButton" layoutX="260.0" layoutY="113.0" mnemonicParsing="false" onAction="#startAlgorithm" prefHeight="25.0" prefWidth="80.0" text="&gt;&gt;" AnchorPane.topAnchor="113.0" />
+      <TextArea fx:id="firstTextArea" layoutX="21.0" layoutY="40.0" prefHeight="85.0" prefWidth="220.0" AnchorPane.bottomAnchor="145.0" AnchorPane.leftAnchor="21.0" AnchorPane.topAnchor="40.0" />
+      <TextArea fx:id="secondTextArea" layoutX="356.0" layoutY="40.0" prefHeight="85.0" prefWidth="220.0" AnchorPane.bottomAnchor="145.0" AnchorPane.leftAnchor="360.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="40.0" />
+      <Button fx:id="startButton" layoutX="260.0" layoutY="123.0" mnemonicParsing="false" onAction="#startAlgorithm" prefHeight="25.0" prefWidth="80.0" text="&gt;&gt;" AnchorPane.topAnchor="123.0" />
       <Button layoutX="260.0" layoutY="200.0" mnemonicParsing="false" onAction="#setKey" prefHeight="25.0" prefWidth="80.0" text="Set key" AnchorPane.bottomAnchor="25.0" />
-      <ChoiceBox fx:id="algorithmMode" layoutX="260.0" layoutY="25.0" prefHeight="25.0" prefWidth="80.0">
+      <ChoiceBox fx:id="algorithmMode" layoutX="260.0" layoutY="40.0" prefHeight="25.0" prefWidth="80.0">
          <items>
             <FXCollections fx:factory="observableArrayList">
                <String fx:value="Encryption" />
@@ -19,5 +20,27 @@
             </FXCollections>
          </items>
       </ChoiceBox>
+      <TextArea layoutX="21.0" layoutY="160.0" prefHeight="85.0" prefWidth="220.0" />
+      <TextArea layoutX="360.0" layoutY="160.0" prefHeight="85.0" prefWidth="220.0" />
+      <Label layoutX="21.0" layoutY="16.0" text="Text:">
+         <font>
+            <Font name="Courier New" size="16.0" />
+         </font>
+      </Label>
+      <Label layoutX="360.0" layoutY="16.0" text="Text:">
+         <font>
+            <Font name="Courier New" size="16.0" />
+         </font>
+      </Label>
+      <Label layoutX="21.0" layoutY="138.0" text="Binary:">
+         <font>
+            <Font name="Courier New" size="16.0" />
+         </font>
+      </Label>
+      <Label layoutX="360.0" layoutY="138.0" text="Binary:">
+         <font>
+            <Font name="Courier New" size="16.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>
