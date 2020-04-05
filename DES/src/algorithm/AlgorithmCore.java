@@ -1,8 +1,9 @@
 package algorithm;
 
+import scene.windows.ChartWindow;
+
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
@@ -73,29 +74,6 @@ public class AlgorithmCore {
         String[] finalStrBinMapping = {finalText.toString(), finalBinText};
 
         return finalStrBinMapping;
-    }
-
-    private int count(StringBuilder text) {
-        StringBuilder textCopy = new StringBuilder(text);
-        int numberOfBits = 8;
-
-        char[] chars = textCopy.toString().toCharArray();
-        List<Character> charsList = new ArrayList<>();
-
-        for (char sym: chars) {
-            charsList.add(sym);
-        }
-
-        Character character = charsList.stream()
-                .filter(bin -> (int) bin > 255)
-                .findAny()
-                .orElse(null);
-
-        if (character != null){
-            numberOfBits = 16;
-        }
-
-        return numberOfBits;
     }
 
     private List<StringBuilder> textSplitter(StringBuilder text, int numberOfSymbols) {
@@ -192,15 +170,39 @@ public class AlgorithmCore {
             binaryKeys = keysReverse(binaryKeys);
         }
 
+        Map<Integer, Integer> roundBitMapping = new LinkedHashMap<>();
+
         for (int i = 0; i < leftBlocks.size(); i++) {
             for (int j = 1; j < leftBlocks.get(i).length; j++) {
                 leftBlocks.get(i)[j] = new StringBuilder(rightBlocks.get(i)[j - 1]);
                 rightBlocks.get(i)[j] = rightBlockOperations(leftBlocks.get(i)[j - 1], rightBlocks.get(i)[j - 1], binaryKeys[j - 1]);
+
+                if (j > 1){
+                    char[] chars = new StringBuilder()
+                            .append(rightBlocks.get(i)[j])
+                            .append(leftBlocks.get(i)[j]).toString().toCharArray();
+                    char[] oldChars = new StringBuilder()
+                            .append(rightBlocks.get(i)[j - 1])
+                            .append(leftBlocks.get(i)[j - 1]).toString().toCharArray();
+
+                    int count = 0;
+                    for (int l = 0; l < chars.length; l++){
+                        if (chars[l] != oldChars[l]){
+                            count++;
+                        }
+                    }
+
+                    roundBitMapping.put(j, count);
+                } else {
+                    roundBitMapping.put(j, 0);
+                }
             }
             results.add(new StringBuilder()
                     .append(rightBlocks.get(i)[rightBlocks.get(i).length - 1])
                     .append(leftBlocks.get(i)[leftBlocks.get(i).length - 1]));
         }
+
+        ChartWindow.setRoundBitMapping(roundBitMapping);
 
         return results;
     }

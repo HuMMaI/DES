@@ -8,6 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import scene.windows.ChartWindow;
 import scene.windows.KeyWindow;
 
 import java.net.URL;
@@ -113,6 +114,12 @@ public class Controller implements Initializable {
         ClipboardContent content = new ClipboardContent();
         content.putString(encryptedText[1]);
         clipboard.setContent(content);
+
+        try {
+            chartOpener();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void alertBox(Alert alert, String title, String headerText, String message) {
@@ -126,6 +133,11 @@ public class Controller implements Initializable {
     public void setKey(ActionEvent actionEvent) throws Exception {
         KeyWindow keyWindow = new KeyWindow();
         keyWindow.start();
+    }
+
+    public void chartOpener() throws Exception {
+        ChartWindow chartWindow = new ChartWindow();
+        chartWindow.start();
     }
 
     public void checkBoxListener(ActionEvent actionEvent) {
