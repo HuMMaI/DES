@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="150.0" prefWidth="350.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scene.controllers.KeyController">
+   <children>
+      <TextField fx:id="keyField" layoutX="25.0" layoutY="58.0" prefWidth="300.0" />
+      <Label layoutX="25.0" layoutY="31.0" text="Key:">
+         <font>
+            <Font name="Courier New Bold" size="20.0" />
+         </font>
+      </Label>
+      <Button fx:id="btnAccept" layoutX="25.0" layoutY="95.0" mnemonicParsing="false" onAction="#accept" prefWidth="140.0" text="Accept" />
+      <Button disable="true" layoutX="185.0" layoutY="95.0" mnemonicParsing="false" prefWidth="140.0" text="Random" />
+      <CheckBox fx:id="keyMode" layoutX="245.0" layoutY="35.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="80.0" text="Cyrillic">
+         <font>
+            <Font name="Courier New" size="12.0" />
+         </font>
+      </CheckBox>
+   </children>
+</AnchorPane>

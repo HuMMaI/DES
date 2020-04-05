@@ -1,11 +1,13 @@
-package scene.config;
+package scene.controllers;
 
+import algorithm.enums.DESMode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
-import sun.awt.SunHints;
+import scene.windows.KeyWindow;
 
 import java.math.BigInteger;
 
@@ -14,6 +16,8 @@ public class KeyController {
     private TextField keyField;
     @FXML
     private Button btnAccept;
+    @FXML
+    private CheckBox keyMode;
 
     @FXML
     public void accept(ActionEvent actionEvent) {
@@ -31,6 +35,13 @@ public class KeyController {
             alert.showAndWait();
         } else {
             Controller.setKey(keyField.getText());
+
+            if (keyMode.isSelected()){
+                Controller.setKeyMode(DESMode.KEY_CYRILLIC);
+            } else {
+                Controller.setKeyMode(DESMode.KEY_ENG);
+            }
+
             KeyWindow.getKeyStage().close();
         }
     }

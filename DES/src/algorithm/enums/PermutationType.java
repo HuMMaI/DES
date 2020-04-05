@@ -1,9 +1,11 @@
-package algorithm;
+package algorithm.enums;
 
 public enum PermutationType {
     INITIAL_PERMUTATION,
     EXPANSION_PERMUTATION,
     KEY_PERMUTATION,
+    KEY_CYRILLIC_PERMUTATION,
     COMPRESS_PERMUTATION,
-    P_BOX_PERMUTATION
+    P_BOX_PERMUTATION,
+    FINAL_PERMUTATION
 }
