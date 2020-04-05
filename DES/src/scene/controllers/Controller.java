@@ -32,6 +32,7 @@ public class Controller implements Initializable {
     private CheckBox textMode;
 
     private static String key;
+    private static DESMode keyMode;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -98,7 +99,12 @@ public class Controller implements Initializable {
         };
 
         String[] encryptedText =
-                encoder.startAlgorithmCore(strBinMapping, key, DESMode.valueOf(mode.toUpperCase()));
+                encoder.startAlgorithmCore(
+                        strBinMapping,
+                        key,
+                        DESMode.valueOf(mode.toUpperCase()),
+                        DESMode.valueOf(String.valueOf(keyMode))
+                );
 
         secondTextArea.setText(encryptedText[0]);
         secondBinTextArea.setText(encryptedText[1]);
@@ -122,6 +128,13 @@ public class Controller implements Initializable {
         keyWindow.start();
     }
 
+    public void checkBoxListener(ActionEvent actionEvent) {
+        firstTextArea.clear();
+        secondTextArea.clear();
+        firstBinTextArea.clear();
+        secondBinTextArea.clear();
+    }
+
     public static String getKey() {
         return key;
     }
@@ -130,10 +143,11 @@ public class Controller implements Initializable {
         Controller.key = key;
     }
 
-    public void checkBoxListener(ActionEvent actionEvent) {
-        firstTextArea.clear();
-        secondTextArea.clear();
-        firstBinTextArea.clear();
-        secondBinTextArea.clear();
+    public static DESMode getKeyMode() {
+        return keyMode;
+    }
+
+    public static void setKeyMode(DESMode keyMode) {
+        Controller.keyMode = keyMode;
     }
 }
