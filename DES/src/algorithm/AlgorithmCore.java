@@ -7,7 +7,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 public class AlgorithmCore {
-    public String[] startAlgorithmCore(StringBuilder[] strBinMapping, String key, DESMode desMode) {
+    public String[] startAlgorithmCore(StringBuilder[] strBinMapping, String key, DESMode desMode, DESMode keyMode) {
         StringBuilder text = strBinMapping[0];
         StringBuilder bin = strBinMapping[1];
         int numberOfSymbols = 8;
@@ -46,7 +46,7 @@ public class AlgorithmCore {
         Thread initPermThread = new Thread(initPerm);
         initPermThread.start();
 
-        StringBuilder[] binaryKeys = keysGenerator(key, desMode);
+        StringBuilder[] binaryKeys = keysGenerator(key, desMode, keyMode);
 
         try {
             countDownLatch.await();
@@ -121,11 +121,24 @@ public class AlgorithmCore {
     private StringBuilder permutation(StringBuilder text, int[][] permutationRule, PermutationType permutationType) {
         StringBuilder binaryStr = new StringBuilder();
 
-        if (permutationType.equals(PermutationType.KEY_PERMUTATION)){
-            //TODO key cyrillic
-            binaryStr.append(parseBit(text, 64, 8));
-        } else {
-            binaryStr.append(text);
+        int numberOfSplits;
+        int numberOfBits;
+        switch (permutationType){
+            case KEY_PERMUTATION:
+                numberOfSplits = 8;
+                numberOfBits = 64;
+                binaryStr.append(parseBit(text, numberOfBits, numberOfSplits));
+                break;
+
+            case KEY_CYRILLIC_PERMUTATION:
+                numberOfSplits = 4;
+                numberOfBits = 64;
+                binaryStr.append(parseBit(text, numberOfBits, numberOfSplits));
+                break;
+
+            default:
+                binaryStr.append(text);
+                break;
         }
 
         StringBuilder permutationStr = new StringBuilder();
@@ -309,8 +322,13 @@ public class AlgorithmCore {
                 .toString(2));
     }
 
-    private StringBuilder[] keysGenerator(String key, DESMode desMode) {
-        StringBuilder permutationKey = permutation(new StringBuilder(key), Tools.kp, PermutationType.KEY_PERMUTATION);
+    private StringBuilder[] keysGenerator(String key, DESMode desMode, DESMode keyMode) {
+        StringBuilder permutationKey;
+        if (keyMode.equals(DESMode.KEY_CYRILLIC)){
+            permutationKey = permutation(new StringBuilder(key), Tools.kp, PermutationType.KEY_CYRILLIC_PERMUTATION);
+        } else {
+            permutationKey = permutation(new StringBuilder(key), Tools.kp, PermutationType.KEY_PERMUTATION);
+        }
 
         StringBuilder c0 = new StringBuilder(permutationKey.substring(0, 28));
         StringBuilder d0 = new StringBuilder(permutationKey.substring(28, permutationKey.length()));
