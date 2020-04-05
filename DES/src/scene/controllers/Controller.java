@@ -1,11 +1,13 @@
 package scene.controllers;
 
 import algorithm.DESMode;
-import algorithm.Encoder;
+import algorithm.AlgorithmCore;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import scene.windows.KeyWindow;
 
 import java.net.URL;
@@ -31,11 +33,14 @@ public class Controller implements Initializable {
 
     private static String key;
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         secondTextArea.setEditable(false);
         secondBinTextArea.setEditable(false);
+
+        alertBox(new Alert(Alert.AlertType.INFORMATION), "Info", null,
+                "The binary result will be automatically copied to the clipboard." +
+                        "\nYou can switch to another mode and insert it.");
     }
 
     @FXML
@@ -81,17 +86,22 @@ public class Controller implements Initializable {
             mode = String.format("%s_CYRILLIC", mode);
         }
 
-        Encoder encoder = new Encoder();
+        AlgorithmCore encoder = new AlgorithmCore();
         StringBuilder[] strBinMapping = {
                 new StringBuilder(firstTextArea.getText()),
                 new StringBuilder(firstBinTextArea.getText())
         };
 
         String[] encryptedText =
-                encoder.startEncoder(strBinMapping, key, DESMode.valueOf(mode.toUpperCase()));
+                encoder.startAlgorithmCore(strBinMapping, key, DESMode.valueOf(mode.toUpperCase()));
 
         secondTextArea.setText(encryptedText[0]);
         secondBinTextArea.setText(encryptedText[1]);
+
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(encryptedText[1]);
+        clipboard.setContent(content);
     }
 
     private void alertBox(Alert alert, String title, String headerText, String message) {
@@ -113,5 +123,12 @@ public class Controller implements Initializable {
 
     public static void setKey(String key) {
         Controller.key = key;
+    }
+
+    public void checkBoxListener(ActionEvent actionEvent) {
+        firstTextArea.clear();
+        secondTextArea.clear();
+        firstBinTextArea.clear();
+        secondBinTextArea.clear();
     }
 }

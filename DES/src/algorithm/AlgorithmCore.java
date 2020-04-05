@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-public class Encoder {
-    public String[] startEncoder(StringBuilder[] strBinMapping, String key, DESMode desMode) {
+public class AlgorithmCore {
+    public String[] startAlgorithmCore(StringBuilder[] strBinMapping, String key, DESMode desMode) {
         StringBuilder text = strBinMapping[0];
         StringBuilder bin = strBinMapping[1];
         int numberOfSymbols = 8;
@@ -18,23 +18,25 @@ public class Encoder {
             numberOfSymbols = 4;
         }
 
-        List<StringBuilder> binaryText = new ArrayList<>();
-        if (bin.toString().equals("")){
-            List<StringBuilder> split = textSplitter(text, numberOfSymbols);
-
-            for (int i = 0; i < split.size(); i++){
-                binaryText.add(parseBit(split.get(i), 64, numberOfBitsSplit));
-            }
-        } else {
-            binaryText = textSplitter(bin, 64);
-        }
-
         List<StringBuilder> permutationBinaryBlocks = new ArrayList<>();
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        List<StringBuilder> finalBinaryText = binaryText;
+        int finalNumberOfSymbols = numberOfSymbols;
+        int finalNumberOfBitsSplit = numberOfBitsSplit;
+
         Runnable initPerm = () -> {
-            for (int i = 0; i < finalBinaryText.size(); i++) {
-                StringBuilder permutation = permutation(finalBinaryText.get(i), Tools.ip, PermutationType.INITIAL_PERMUTATION);
+            List<StringBuilder> binaryText = new ArrayList<>();
+            if (bin.toString().equals("")){
+                List<StringBuilder> split = textSplitter(text, finalNumberOfSymbols);
+
+                for (int i = 0; i < split.size(); i++){
+                    binaryText.add(parseBit(split.get(i), 64, finalNumberOfBitsSplit));
+                }
+            } else {
+                binaryText = textSplitter(bin, 64);
+            }
+
+            for (int i = 0; i < binaryText.size(); i++) {
+                StringBuilder permutation = permutation(binaryText.get(i), Tools.ip, PermutationType.INITIAL_PERMUTATION);
                 permutationBinaryBlocks.add(permutation);
             }
 

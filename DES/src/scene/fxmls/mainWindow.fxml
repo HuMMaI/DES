@@ -12,7 +12,7 @@
       <TextArea fx:id="secondTextArea" layoutX="356.0" layoutY="40.0" prefHeight="85.0" prefWidth="220.0" AnchorPane.bottomAnchor="145.0" AnchorPane.leftAnchor="360.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="40.0" />
       <Button fx:id="startButton" layoutX="260.0" layoutY="123.0" mnemonicParsing="false" onAction="#startAlgorithm" prefHeight="25.0" prefWidth="80.0" text="&gt;&gt;" AnchorPane.topAnchor="123.0" />
       <Button layoutX="260.0" layoutY="200.0" mnemonicParsing="false" onAction="#setKey" prefHeight="25.0" prefWidth="80.0" text="Set key" AnchorPane.bottomAnchor="25.0" />
-      <ChoiceBox fx:id="algorithmMode" layoutX="260.0" layoutY="40.0" prefHeight="25.0" prefWidth="80.0">
+      <ChoiceBox fx:id="algorithmMode" layoutX="260.0" layoutY="40.0" prefHeight="25.0" prefWidth="80.0" onAction="#checkBoxListener">
          <items>
             <FXCollections fx:factory="observableArrayList">
                <String fx:value="Encryption" />
