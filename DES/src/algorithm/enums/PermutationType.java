@@ -1,4 +1,4 @@
-package algorithm;
+package algorithm.enums;
 
 public enum PermutationType {
     INITIAL_PERMUTATION,

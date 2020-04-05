@@ -1,6 +1,6 @@
 package scene.controllers;
 
-import algorithm.DESMode;
+import algorithm.enums.DESMode;
 import algorithm.AlgorithmCore;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

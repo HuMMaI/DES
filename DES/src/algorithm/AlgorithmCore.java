@@ -1,5 +1,7 @@
 package algorithm;
 
+import algorithm.enums.DESMode;
+import algorithm.enums.PermutationType;
 import scene.windows.ChartWindow;
 
 import java.math.BigInteger;
