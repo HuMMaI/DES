@@ -38,6 +38,11 @@ public class Controller implements Initializable {
         secondTextArea.setEditable(false);
         secondBinTextArea.setEditable(false);
 
+        firstTextArea.setWrapText(true);
+        secondTextArea.setWrapText(true);
+        firstBinTextArea.setWrapText(true);
+        secondBinTextArea.setWrapText(true);
+
         alertBox(new Alert(Alert.AlertType.INFORMATION), "Info", null,
                 "The binary result will be automatically copied to the clipboard." +
                         "\nYou can switch to another mode and insert it.");
